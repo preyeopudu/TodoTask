@@ -8,13 +8,11 @@
 import React from 'react';
 
 import {View, StyleSheet, Text} from 'react-native';
+import {Provider} from 'react-redux';
+import store from './src/store';
 
 function App(): JSX.Element {
-  return (
-    <View style={styles.container}>
-      <Text>heello</Text>
-    </View>
-  );
+  return <Provider store={store}></Provider>;
 }
 
 const styles = StyleSheet.create({
