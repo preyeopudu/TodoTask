@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1041560389608",
+    "project_id": "todoclone-7b2e4",
+    "storage_bucket": "todoclone-7b2e4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1041560389608:android:c7702383a516c5b205465d",
+        "android_client_info": {
+          "package_name": "com.todocopy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1041560389608-j1nujjh3t9st7p1ffalqpp11t5tfml28.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDz8nKcAdtoeoRxDhPrLMkD3X1wotPzlwo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1041560389608-j1nujjh3t9st7p1ffalqpp11t5tfml28.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
