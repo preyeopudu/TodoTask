@@ -7,9 +7,10 @@ import Heading from '../../components/Headings';
 import AppView from '../../components/AppView';
 import AuthBottom from '../../components/AuthBottom';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
-import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
+import auth from '@react-native-firebase/auth';
 import {useDispatch} from 'react-redux';
 import {setLoading} from '../../store/reducers/LoadingReducer';
+import {login} from '../../store/reducers/AuthReducer';
 const SignUpPage = () => {
   const dispatch = useDispatch();
   const [authInfo, setAuthInfo] = useState({
@@ -30,6 +31,7 @@ const SignUpPage = () => {
       );
       // User account created
       const user = userCredential.user;
+      dispatch(login(user));
       return user;
     } catch (e: any) {
       if (e.code === 'auth/email-already-in-use') {
