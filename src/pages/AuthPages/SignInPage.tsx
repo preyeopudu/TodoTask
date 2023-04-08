@@ -33,7 +33,7 @@ const SignInPage = () => {
       );
       dispatch(setLoading(true));
       const user = userCredential.user;
-      dispatch(login(user));
+      dispatch(login(user.uid));
     } catch (e: any) {
       if (e.code === 'auth/invalid-email') {
         Alert.alert('Authentication Error', 'The email address is invalid.');

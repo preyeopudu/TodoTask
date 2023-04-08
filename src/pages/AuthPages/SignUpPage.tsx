@@ -31,7 +31,7 @@ const SignUpPage = () => {
       );
       // User account created
       const user = userCredential.user;
-      dispatch(login(user));
+      dispatch(login(user.uid));
       return user;
     } catch (e: any) {
       if (e.code === 'auth/email-already-in-use') {
@@ -55,7 +55,7 @@ const SignUpPage = () => {
   return (
     <AppView>
       <View style={styles.container}>
-        <Heading title="Set up your free account" />
+        <Heading title="Set up your free account to Create Tasks" />
         <View style={styles.formContainer}>
           <FormInput
             onChangeText={e => setAuthInfo({...authInfo, email: e})}
