@@ -1,4 +1,5 @@
-import React, {useRef, useState, useEffect} from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {useRef, useState, useEffect, useMemo, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -7,11 +8,14 @@ import {
   ScrollView,
   useWindowDimensions,
   FlatList,
+  Alert,
 } from 'react-native';
 import TabView from '../../components/TabView';
 import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
+import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import Icon from 'react-native-vector-icons/AntDesign';
 const db = firestore();
 
 const HomePage = () => {
@@ -19,10 +23,36 @@ const HomePage = () => {
   const [listData, setListData] = useState([]);
   const tabs = [{title: '\u2605', content: 'Content for Tab 1'}];
   const {width} = useWindowDimensions();
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  // variables
+  const snapPoints = useMemo(() => ['25%', '30%'], []);
+
+  // callbacks
+  const handlePresentModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.present();
+  }, []);
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('handleSheetChanges', index);
+  }, []);
   const ScrollRef = useRef(null);
   const scrollViewRef = useRef(null);
   const [activeTab, setActiveTab] = useState(0);
   const {navigate} = useNavigation();
+
+  useEffect(() => {
+    const checkDefaultList = async () => {
+      const listsRef = db.collection('users').doc(userId).collection('lists');
+      const querySnapshot = await listsRef
+        .where('title', '==', 'My Task')
+        .get();
+      if (querySnapshot.empty) {
+        await listsRef.add({title: 'My Task', tasks: []});
+      }
+    };
+
+    checkDefaultList();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = db
@@ -39,6 +69,21 @@ const HomePage = () => {
     return unsubscribe;
   }, [userId]);
 
+  const addTaskToList = async (listId, newTask) => {
+    const listRef = db
+      .collection('users')
+      .doc(userId)
+      .collection('lists')
+      .doc(listId);
+    try {
+      await listRef.update({
+        tasks: firestore.FieldValue.arrayUnion(newTask),
+      });
+    } catch (error) {
+      console.error('Error updating tasks in list:', error);
+      Alert.alert('Error', 'Could not add task to list.');
+    }
+  };
   const handleTabPress = (index: number) => {
     try {
       // setActiveTab(index);
@@ -59,6 +104,11 @@ const HomePage = () => {
   return (
     <View style={styles.container}>
       <View style={styles.navbar}>
+        <TouchableOpacity
+          onPress={() => navigate('list')}
+          style={styles.tabButton}>
+          <Text style={styles.tabButtonText}>{'\u2605'}</Text>
+        </TouchableOpacity>
         <ScrollView
           ref={ScrollRef}
           horizontal
@@ -81,10 +131,11 @@ const HomePage = () => {
             </TouchableOpacity>
           ))}
         </ScrollView>
+
         <TouchableOpacity
           onPress={() => navigate('list')}
           style={styles.tabButton}>
-          <Text style={styles.tabButtonText}>+ Add List</Text>
+          <Text style={styles.tabButtonText}>+</Text>
         </TouchableOpacity>
       </View>
       <FlatList
@@ -99,10 +150,27 @@ const HomePage = () => {
       />
 
       <View style={styles.bottomNavContainer}>
-        <TouchableOpacity style={styles.bottomButton}>
+        <TouchableOpacity
+          style={styles.bottomButton}
+          onPress={handlePresentModalPress}>
           <Text style={styles.bottomButtonText}>+</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.bottomButton}
+          onPress={handlePresentModalPress}>
+          <Icon name="up" size={30} color="red" />
+        </TouchableOpacity>
       </View>
+
+      <BottomSheetModal
+        ref={bottomSheetModalRef}
+        index={1}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}>
+        <View>
+          <Text>Awesome 🎉</Text>
+        </View>
+      </BottomSheetModal>
     </View>
   );
 };
@@ -147,14 +215,15 @@ const styles = StyleSheet.create({
   },
   bottomNavContainer: {
     backgroundColor: 'rgba(69,69,69,0.4)',
-    paddingVertical: 20,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   bottomButton: {
     height: 60,
     width: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'flex-end',
     backgroundColor: '#000',
     marginHorizontal: 16,
     borderRadius: 10,
