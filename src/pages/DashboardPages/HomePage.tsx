@@ -12,10 +12,11 @@ import {
 import TabView from '../../components/TabView';
 import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 
 import Icon from 'react-native-vector-icons/Feather';
 import BottomSheet from '../../components/BottomSheet';
+import {logout} from '../../store/reducers/AuthReducer';
 const db = firestore();
 
 const HomePage = () => {
@@ -25,7 +26,7 @@ const HomePage = () => {
   const [visible, setVisible] = useState(false);
   const [activeId, SetActiveId] = useState('');
   const {width} = useWindowDimensions();
-
+  const dispatch = useDispatch();
   const ScrollRef = useRef(null);
   const scrollViewRef = useRef(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -132,6 +133,11 @@ const HomePage = () => {
       />
 
       <View style={styles.bottomNavContainer}>
+        <TouchableOpacity
+          style={styles.bottomButton}
+          onPress={() => dispatch(logout())}>
+          <Icon name="arrow-left" size={30} color="red" />
+        </TouchableOpacity>
         {activeId && (
           <TouchableOpacity
             style={styles.bottomButton}
@@ -192,7 +198,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(69,69,69,0.4)',
     paddingVertical: 10,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
   },
   bottomButton: {
     height: 60,

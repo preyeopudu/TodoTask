@@ -1,7 +1,7 @@
+/* eslint-disable react/react-in-jsx-scope */
 import {useSelector} from 'react-redux';
-import {useNavigation} from '@react-navigation/native';
 import AppView from '../../components/AppView';
-import {FlatList, Image, View, StyleSheet, Text} from 'react-native';
+import {FlatList, Image, View, StyleSheet, Text, Alert} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import {useEffect, useState} from 'react';
 import TodoTask from '../../components/TodoTask';
