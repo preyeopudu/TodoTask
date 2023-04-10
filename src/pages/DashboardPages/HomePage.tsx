@@ -123,7 +123,7 @@ const HomePage = () => {
         showsHorizontalScrollIndicator={false}
         pagingEnabled
         horizontal
-        data={listData.reverse()}
+        data={listData}
         renderItem={({item}) => (
           <TabView tasks={item.tasks} listId={activeId} />
         )}

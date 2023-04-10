@@ -8,7 +8,6 @@ import {useSelector} from 'react-redux';
 
 const TodoTask = ({task, listId}) => {
   const {user: userId} = useSelector((state: any) => state.auth);
-  console.log(task);
   const HandleCompleted = async () => {
     const listRef = db
       .collection('users')
@@ -41,8 +40,6 @@ const TodoTask = ({task, listId}) => {
       const taskDoc = await listRef.get();
       const currentStar = taskDoc.data().star;
       listRef.update({star: !currentStar});
-
-      console.log('Task updated successfully', listId);
     } catch (error) {
       console.error('Error updating task:', error);
       Alert.alert('Error', 'Could not update task.');
@@ -52,9 +49,12 @@ const TodoTask = ({task, listId}) => {
   return (
     <View style={styles.container}>
       <View style={styles.headContainer}>
-        <TouchableOpacity onPress={HandleCompleted}>
-          <Icon name="circle" size={20} color="green" />
-        </TouchableOpacity>
+        {listId && (
+          <TouchableOpacity onPress={HandleCompleted}>
+            <Icon name="circle" size={20} color="green" />
+          </TouchableOpacity>
+        )}
+
         <View style={styles.textContainer}>
           <Text>{task.title}</Text>
           <Text style={{fontSize: 10}}>{task.description}</Text>
@@ -76,13 +76,15 @@ const TodoTask = ({task, listId}) => {
         </View>
       </View>
 
-      <TouchableOpacity onPress={HandleStared}>
-        <Icon
-          name="star"
-          size={20}
-          color={task.star === true ? 'green' : 'white'}
-        />
-      </TouchableOpacity>
+      {listId && (
+        <TouchableOpacity onPress={HandleStared}>
+          <Icon
+            name="star"
+            size={20}
+            color={task.star === true ? 'green' : 'white'}
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

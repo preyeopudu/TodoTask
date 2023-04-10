@@ -1,12 +1,15 @@
 import {useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
 import AppView from '../../components/AppView';
+import {FlatList, Image, View, StyleSheet, Text} from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
+import TodoTask from '../../components/TodoTask';
 const db = firestore();
 
 const StarredTaskPage = () => {
   const {user: userId} = useSelector((state: any) => state.auth);
+  const [tasks, setTasks] = useState([]);
   const tasksRef = db.collection('users').doc(userId).collection('lists');
 
   useEffect(() => {
@@ -26,12 +29,12 @@ const StarredTaskPage = () => {
               id: doc.id,
               ...doc.data(),
             };
-            if (task.star === true) {
+            if (task.star === true && task.isCompleted === false) {
               tasks.push(task);
             }
           });
         });
-        console.log(tasks);
+        setTasks(tasks);
       })
       .catch(error => {
         console.error('Error getting tasks:', error);
@@ -39,7 +42,43 @@ const StarredTaskPage = () => {
       });
   }, []);
 
-  return <AppView></AppView>;
+  return (
+    <AppView>
+      {tasks.length === 0 ? (
+        <View style={style.textContainer}>
+          <Image
+            source={require('../../assets/images/star.png')}
+            style={style.image}
+          />
+          <Text style={style.text}>No starred tasks</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={tasks}
+          renderItem={({item}) => <TodoTask task={item} />}
+        />
+      )}
+    </AppView>
+  );
 };
 
+const style = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  image: {
+    height: 150,
+    resizeMode: 'contain',
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginVertical: 20,
+  },
+});
 export default StarredTaskPage;
