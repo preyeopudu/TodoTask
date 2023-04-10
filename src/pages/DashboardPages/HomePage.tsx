@@ -8,33 +8,24 @@ import {
   ScrollView,
   useWindowDimensions,
   FlatList,
-  Alert,
 } from 'react-native';
 import TabView from '../../components/TabView';
 import {useNavigation} from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import {useSelector} from 'react-redux';
-import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import Icon from 'react-native-vector-icons/AntDesign';
+
+import Icon from 'react-native-vector-icons/Feather';
+import BottomSheet from '../../components/BottomSheet';
 const db = firestore();
 
 const HomePage = () => {
   const {user: userId} = useSelector((state: any) => state.auth);
   const [listData, setListData] = useState([]);
-  const tabs = [{title: '\u2605', content: 'Content for Tab 1'}];
+  const memoizedListData = useMemo(() => listData, [listData]);
+  const [visible, setVisible] = useState(false);
+  const [activeId, SetActiveId] = useState('');
   const {width} = useWindowDimensions();
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-  // variables
-  const snapPoints = useMemo(() => ['25%', '30%'], []);
-
-  // callbacks
-  const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-  }, []);
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
-  }, []);
   const ScrollRef = useRef(null);
   const scrollViewRef = useRef(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -47,7 +38,8 @@ const HomePage = () => {
         .where('title', '==', 'My Task')
         .get();
       if (querySnapshot.empty) {
-        await listsRef.add({title: 'My Task', tasks: []});
+        const newDocRef = await listsRef.add({title: 'My Task', tasks: []});
+        SetActiveId(newDocRef.id);
       }
     };
 
@@ -64,34 +56,21 @@ const HomePage = () => {
         querySnapshot.forEach(doc => {
           data.push({...doc.data(), id: doc.id});
         });
+        SetActiveId(data[0]?.id);
         setListData(data);
       });
     return unsubscribe;
   }, [userId]);
 
-  const addTaskToList = async (listId, newTask) => {
-    const listRef = db
-      .collection('users')
-      .doc(userId)
-      .collection('lists')
-      .doc(listId);
-    try {
-      await listRef.update({
-        tasks: firestore.FieldValue.arrayUnion(newTask),
-      });
-    } catch (error) {
-      console.error('Error updating tasks in list:', error);
-      Alert.alert('Error', 'Could not add task to list.');
-    }
-  };
-  const handleTabPress = (index: number) => {
-    try {
-      // setActiveTab(index);
+  const handleTabPress = useCallback(
+    (index: number) => {
       if (scrollViewRef.current) {
         scrollViewRef.current.scrollToIndex({index: index});
       }
-    } catch (error) {}
-  };
+      SetActiveId(memoizedListData[index].id);
+    },
+    [memoizedListData],
+  );
 
   // const goToNextPage = () => {
 
@@ -99,13 +78,14 @@ const HomePage = () => {
     const position = event.nativeEvent.contentOffset.x;
     const index = Math.round(position / width);
     setActiveTab(index);
+    SetActiveId(listData[index].id);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.navbar}>
         <TouchableOpacity
-          onPress={() => navigate('list')}
+          onPress={() => navigate('star')}
           style={styles.tabButton}>
           <Text style={styles.tabButtonText}>{'\u2605'}</Text>
         </TouchableOpacity>
@@ -143,34 +123,29 @@ const HomePage = () => {
         showsHorizontalScrollIndicator={false}
         pagingEnabled
         horizontal
-        data={listData}
-        renderItem={({item}) => <TabView />}
+        data={listData.reverse()}
+        renderItem={({item}) => (
+          <TabView tasks={item.tasks} listId={activeId} />
+        )}
         bounces={false}
         onScroll={handleScroll}
       />
 
       <View style={styles.bottomNavContainer}>
-        <TouchableOpacity
-          style={styles.bottomButton}
-          onPress={handlePresentModalPress}>
-          <Text style={styles.bottomButtonText}>+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.bottomButton}
-          onPress={handlePresentModalPress}>
-          <Icon name="up" size={30} color="red" />
-        </TouchableOpacity>
+        {activeId && (
+          <TouchableOpacity
+            style={styles.bottomButton}
+            onPress={() => setVisible(true)}>
+            <Icon name="plus" size={30} color="green" />
+          </TouchableOpacity>
+        )}
       </View>
 
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}>
-        <View>
-          <Text>Awesome 🎉</Text>
-        </View>
-      </BottomSheetModal>
+      <BottomSheet
+        setVisible={setVisible}
+        listId={activeId}
+        visible={visible}
+      />
     </View>
   );
 };

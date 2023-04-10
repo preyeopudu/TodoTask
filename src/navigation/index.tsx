@@ -6,7 +6,7 @@ import DashboardStack from './stack/DashboardStack';
 import LoadingLayout from '../Layouts/LoadingLayout';
 const IndexStack = () => {
   const {auth: authState} = useSelector((state: any) => state.auth);
-  console.log(authState);
+
   return (
     <>
       <NavigationContainer>
